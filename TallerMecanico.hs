@@ -25,7 +25,7 @@ calculoPatental :: Patente -> Int
 calculoPatental unaPatente
     |last unaPatente == '4' = 3000 * length unaPatente
     |otherwise = 20000
-    
+
 --------------------------------------------------------------------------------
 --Ejercicio 2
 autoPeligroso :: Auto -> Bool
@@ -36,3 +36,37 @@ chequeoPrimeraLlanta desgastesDeLaLlanta = (head desgastesDeLaLlanta) > 0.5
 
 necesitaRevision :: Auto -> Bool
 necesitaRevision unAuto = anio (ultimoArreglo unAuto) <= 2015
+
+--------------------------------------------------------------------------------
+--Ejercicio 4
+
+ordenadosTOC :: [Auto] -> Bool
+ordenadosTOC autos = elementosParesSonPares (listaDeDesgastes autos) && elementosImparesSonImpares (listaDeDesgastes autos)
+
+elementosParesSonPares :: [Int] -> Bool
+elementosParesSonPares desgastes = elementosXsonX even elementosPares desgastes
+
+elementosImparesSonImpares :: [Int] -> Bool
+elementosImparesSonImpares desgastes = elementosXsonX odd elementosImpares desgastes
+
+--Retorna True/False de acuerdo a si todos los elementos X son X o no. (X = Pares o Impares).
+elementosXsonX :: (Int->Bool) -> ([Int]->[Int]) -> [Int] -> Bool
+elementosXsonX funcion1 funcion2 desgastes = foldl (&&) True (map funcion1 (funcion2 desgastes))
+
+--Recibe una lista y devuelve los elementos con posicion impar de esa lista.
+elementosImpares :: [a] -> [a]
+elementosImpares (x:xs) = x:elementosPares xs
+elementosImpares _ = []
+
+--Recibe una lista y devuelve los elementos con posicion par de esa lista.
+elementosPares :: [a] -> [a]
+elementosPares (_:xs) = elementosImpares xs
+elementosPares _ = []
+
+--Recibe un auto y devuelve la cantidad de desgaste del mismo.
+cantidadDeDesgaste :: Auto -> Int
+cantidadDeDesgaste auto = (round.((*10).sum)) (desgasteLlantas auto)
+
+--Recibe una lista de autos y devuelve una lista con la cantidad de desgaste de cada uno de ellos.
+listaDeDesgastes :: [Auto] -> [Int]
+listaDeDesgastes autos = map cantidadDeDesgaste autos
