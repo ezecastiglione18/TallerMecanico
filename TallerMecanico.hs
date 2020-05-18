@@ -38,6 +38,31 @@ necesitaRevision :: Auto -> Bool
 necesitaRevision unAuto = anio (ultimoArreglo unAuto) <= 2015
 
 --------------------------------------------------------------------------------
+--Ejercicio 3
+
+alfa :: Auto -> Auto
+alfa unAuto
+  | rpm unAuto <= 2000 = unAuto
+  | otherwise = unAuto {rpm = 2000}
+
+bravo :: Auto -> Auto
+bravo unAuto = unAuto {desgasteLlantas = [0,0,0,0]} 
+
+charly :: Auto -> Auto
+charly unAuto = alfa unAuto
+--faltaria poner que hace lo mismo que bravo (sin repetir logica)
+
+tango :: Auto -> Auto
+tango unAuto = unAuto
+
+zulu :: Auto -> Auto
+zulu unAuto = unAuto {temperaturaAgua = 90}
+--faltaria agregar que hace lo mismo que Lima
+
+--lima :: Auto -> Auto
+--lima unAuto = unAuto {(take 2 desgasteLlantas) = [0,0]}
+
+--------------------------------------------------------------------------------
 --Ejercicio 4
 
 ordenadosTOC :: [Auto] -> Bool
