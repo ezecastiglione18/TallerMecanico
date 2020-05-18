@@ -49,8 +49,7 @@ bravo :: Auto -> Auto
 bravo unAuto = unAuto {desgasteLlantas = [0,0,0,0]} 
 
 charly :: Auto -> Auto
-charly unAuto = alfa unAuto
---faltaria poner que hace lo mismo que bravo (sin repetir logica)
+charly = (bravo . alfa)
 
 tango :: Auto -> Auto
 tango unAuto = unAuto
