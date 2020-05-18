@@ -55,11 +55,10 @@ tango :: Auto -> Auto
 tango unAuto = unAuto
 
 zulu :: Auto -> Auto
-zulu unAuto = unAuto {temperaturaAgua = 90}
---faltaria agregar que hace lo mismo que Lima
+zulu unAuto = lima (unAuto {temperaturaAgua = 90})
 
---lima :: Auto -> Auto
---lima unAuto = unAuto {(take 2 desgasteLlantas) = [0,0]}
+lima :: Auto -> Auto
+lima unAuto = unAuto {desgasteLlantas = [0,0] ++ drop 2 (desgasteLlantas unAuto)}
 
 --------------------------------------------------------------------------------
 --Ejercicio 4
