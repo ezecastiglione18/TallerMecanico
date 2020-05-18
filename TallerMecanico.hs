@@ -1,6 +1,7 @@
 type Desgaste = Float
 type Patente = String
 type Fecha = (Int, Int, Int)
+type Mecanico = Auto -> Auto
  
 -- Definiciones base
 anio :: Fecha -> Int
@@ -19,7 +20,7 @@ evaluarPatente unaPatente
     |otherwise = 15000
 
 tieneLasLetras :: String -> String -> Patente -> Bool
-tieneLasLetras parLetras1 parLetras2 unaPatente = (take 2 unaPatente) >= parLetras1 && (take 2 unaPatente) <= parLetras2
+tieneLasLetras parLetras1 parLetras2 unaPatente = unaPatente >= parLetras1 && unaPatente <= parLetras2
 
 calculoPatental :: Patente -> Int
 calculoPatental unaPatente
@@ -40,24 +41,24 @@ necesitaRevision unAuto = anio (ultimoArreglo unAuto) <= 2015
 --------------------------------------------------------------------------------
 --Ejercicio 3
 
-alfa :: Auto -> Auto
+alfa :: Mecanico
 alfa unAuto
   | rpm unAuto <= 2000 = unAuto
   | otherwise = unAuto {rpm = 2000}
 
-bravo :: Auto -> Auto
+bravo :: Mecanico
 bravo unAuto = unAuto {desgasteLlantas = [0,0,0,0]} 
 
-charly :: Auto -> Auto
+charly :: Mecanico
 charly = (bravo . alfa)
 
-tango :: Auto -> Auto
+tango :: Mecanico
 tango unAuto = unAuto
 
-zulu :: Auto -> Auto
+zulu :: Mecanico
 zulu unAuto = lima (unAuto {temperaturaAgua = 90})
 
-lima :: Auto -> Auto
+lima :: Mecanico
 lima unAuto = unAuto {desgasteLlantas = [0,0] ++ drop 2 (desgasteLlantas unAuto)}
 
 --------------------------------------------------------------------------------
@@ -93,3 +94,14 @@ cantidadDeDesgaste auto = (round.((*10).sum)) (desgasteLlantas auto)
 --Recibe una lista de autos y devuelve una lista con la cantidad de desgaste de cada uno de ellos.
 listaDeDesgastes :: [Auto] -> [Int]
 listaDeDesgastes autos = map cantidadDeDesgaste autos
+--------------------------------------------------------------------------------
+--Ejercicio 5
+aplicarOrdenDeReparacion :: Fecha -> [Mecanico] -> Mecanico
+aplicarOrdenDeReparacion fecha listaDeTecnicos unAuto= (renovarFechaDeReparacion fecha . aplicarTecnicos listaDeTecnicos) unAuto
+
+aplicarTecnicos :: [Mecanico] -> Mecanico
+aplicarTecnicos listaDeTecnicos unAuto = foldl operador unAuto listaDeTecnicos
+ where operador auto unTecnico = unTecnico auto
+
+renovarFechaDeReparacion:: Fecha -> Mecanico
+renovarFechaDeReparacion fecha unAuto = unAuto {ultimoArreglo = fecha}
