@@ -15,11 +15,11 @@ costoDeReparacion = evaluarPatente.patente
 evaluarPatente :: Patente -> Int
 evaluarPatente unaPatente
     |length unaPatente == 7 = 12500
-    |tieneLasLetras "NB" "DJ" unaPatente = calculoPatental unaPatente
+    |tieneLasLetras "DJ" "NB" unaPatente = calculoPatental unaPatente
     |otherwise = 15000
 
 tieneLasLetras :: String -> String -> Patente -> Bool
-tieneLasLetras parLetras1 parLetras2 unaPatente = (take 2 unaPatente) == parLetras1 || (take 2 unaPatente) == parLetras2
+tieneLasLetras parLetras1 parLetras2 unaPatente = (take 2 unaPatente) >= parLetras1 && (take 2 unaPatente) <= parLetras2
 
 calculoPatental :: Patente -> Int
 calculoPatental unaPatente
