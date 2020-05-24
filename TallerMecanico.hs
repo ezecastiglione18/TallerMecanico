@@ -1,3 +1,5 @@
+import Text.Show.Functions
+
 type Desgaste = Float
 type Patente = String
 type Fecha = (Int, Int, Int)
@@ -8,10 +10,38 @@ anio :: Fecha -> Int
 anio (_, _, year) = year
  
 data Auto = Auto {patente :: Patente, desgasteLlantas :: [Desgaste], rpm :: Int, temperaturaAgua :: Int, ultimoArreglo :: Fecha} deriving (Show, Eq)
+
+--EJEMPLOS DE AUTOS
+honda :: Auto
+honda = Auto "AT001LN" [0.5, 0.4,0.2,0] 1500 90 (20,02,2015)
+
+ford :: Auto
+ford = Auto "DJV214" [0.6, 0.5,0.6,0.1] 1700 70 (21,12,2016)
+
+audi :: Auto
+audi = Auto "DJV215" [0.1, 0.1,0.1,0] 1100 30 (22,03,2019)
+
+fiat :: Auto
+fiat = Auto "ERT371" [0.1, 0.4, 0.2, 0] 1500 100 (13,08,2012)
+
+renault :: Auto
+renault = Auto "DJK004" [0.2, 0.5, 0.6, 0.1] 2000 60 (15,09,2016)
+
+volkswagen :: Auto
+volkswagen = Auto "AA574OP" [0.1, 0.1, 0.1, 0] 1350 90 (06,02,2020)
+
+mercedes :: Auto
+mercedes = Auto "DFH029" [0.3,0.1,0.1,0] 1200 10 (24,02,2014)
+
+chevrolet :: Auto
+chevrolet = Auto "ALO591" [0.7,0.4,0.2,0.1] 1600 20 (22,09,2017)
+
 ---------------------------------------------------------------------------------
 --Ejercicio 1
 costoDeReparacion :: Auto -> Int
 costoDeReparacion = evaluarPatente.patente
+--honda = 12500 ; ford = 18000 ; audi = 20000 ; mercedes = 15000 ; chevrolet = 15000
+--reanult = 18000 ; volkswagen = 12500
 
 evaluarPatente :: Patente -> Int
 evaluarPatente unaPatente
@@ -31,12 +61,14 @@ calculoPatental unaPatente
 --Ejercicio 2
 autoPeligroso :: Auto -> Bool
 autoPeligroso = chequeoPrimeraLlanta.desgasteLlantas
+--SON TRUE: ford y chevrolet
 
 chequeoPrimeraLlanta :: [Desgaste] -> Bool
 chequeoPrimeraLlanta desgastesDeLaLlanta = (head desgastesDeLaLlanta) > 0.5
 
 necesitaRevision :: Auto -> Bool
 necesitaRevision unAuto = anio (ultimoArreglo unAuto) <= 2015
+--SON TRUE: mercedes, fiat, honda
 
 --------------------------------------------------------------------------------
 --Ejercicio 3
@@ -66,6 +98,7 @@ lima unAuto = unAuto {desgasteLlantas = [0,0] ++ drop 2 (desgasteLlantas unAuto)
 
 ordenadosTOC :: [Auto] -> Bool
 ordenadosTOC autos = elementosParesSonPares (listaDeDesgastes autos) && elementosImparesSonImpares (listaDeDesgastes autos)
+--[fiat, renault, volkswagen] => Ordenado
 
 elementosParesSonPares :: [Int] -> Bool
 elementosParesSonPares desgastes = elementosXsonX even elementosPares desgastes
@@ -105,3 +138,18 @@ aplicarTecnicos listaDeTecnicos unAuto = foldl operador unAuto listaDeTecnicos
 
 renovarFechaDeReparacion:: Fecha -> Mecanico
 renovarFechaDeReparacion fecha unAuto = unAuto {ultimoArreglo = fecha}
+
+tecnicosEnCondiciones :: [Mecanico] -> Auto -> Int
+tecnicosEnCondiciones listaDeTecnicos unAuto = length (filter (loDejaEnCondiciones unAuto) listaDeTecnicos)
+--ford [alfa, bravo, charly, tango, zulu, lima] => [bravo, charly, zuli, lima]
+--honda [alfa, bravo, charly, tango, zulu, lima] => [alfa, bravo, charly, tango, zulu, lima]
+
+loDejaEnCondiciones :: Auto -> Mecanico -> Bool
+loDejaEnCondiciones unAuto unMecanico = not (autoPeligroso (unMecanico unAuto))
+
+costoTotal :: [Auto] -> Int
+costoTotal listaAutos = sum (costosDeLasReparaciones listaAutos)
+--[honda, ford, audi, mercedes] => 27500
+
+costosDeLasReparaciones :: [Auto] -> [Int]
+costosDeLasReparaciones listaDeAutos = map costoDeReparacion (filter necesitaRevision listaDeAutos)
