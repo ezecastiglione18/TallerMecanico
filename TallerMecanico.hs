@@ -127,21 +127,25 @@ cantidadDeDesgaste auto = (round.((*10).sum)) (desgasteLlantas auto)
 --Recibe una lista de autos y devuelve una lista con la cantidad de desgaste de cada uno de ellos.
 listaDeDesgastes :: [Auto] -> [Int]
 listaDeDesgastes autos = map cantidadDeDesgaste autos
+
 --------------------------------------------------------------------------------
 --Ejercicio 5
+
 aplicarOrdenDeReparacion :: Fecha -> [Mecanico] -> Mecanico
 aplicarOrdenDeReparacion fecha listaDeTecnicos unAuto= (renovarFechaDeReparacion fecha . aplicarTecnicos listaDeTecnicos) unAuto
 
 aplicarTecnicos :: [Mecanico] -> Mecanico
-aplicarTecnicos listaDeTecnicos unAuto = foldl operador unAuto listaDeTecnicos
- where operador auto unTecnico = unTecnico auto
+aplicarTecnicos listaDeTecnicos unAuto = foldr ($) unAuto listaDeTecnicos
 
 renovarFechaDeReparacion:: Fecha -> Mecanico
 renovarFechaDeReparacion fecha unAuto = unAuto {ultimoArreglo = fecha}
 
-tecnicosEnCondiciones :: [Mecanico] -> Auto -> Int
-tecnicosEnCondiciones listaDeTecnicos unAuto = length (filter (loDejaEnCondiciones unAuto) listaDeTecnicos)
---ford [alfa, bravo, charly, tango, zulu, lima] => [bravo, charly, zuli, lima]
+--------------------------------------------------------------------------------
+--Ejercicio 6
+
+tecnicosEnCondiciones :: [Mecanico] -> Auto -> [Mecanico]
+tecnicosEnCondiciones listaDeTecnicos unAuto = filter (loDejaEnCondiciones unAuto) listaDeTecnicos
+--ford [alfa, bravo, charly, tango, zulu, lima] => [bravo, charly, zulu, lima]
 --honda [alfa, bravo, charly, tango, zulu, lima] => [alfa, bravo, charly, tango, zulu, lima]
 
 loDejaEnCondiciones :: Auto -> Mecanico -> Bool
@@ -153,3 +157,25 @@ costoTotal listaAutos = sum (costosDeLasReparaciones listaAutos)
 
 costosDeLasReparaciones :: [Auto] -> [Int]
 costosDeLasReparaciones listaDeAutos = map costoDeReparacion (filter necesitaRevision listaDeAutos)
+
+--------------------------------------------------------------------------------
+--Ejercicio 7
+{-
+    Parte 1) Si, podriamos obtener el primer tecnico que deja el auto en condiciones, porque haskell funciona con Lazy Evaluation. Por lo tanto, 
+             ya con tener los elementos que requiere el take, haskell deja de trabajar buscando el resto del filter. Pero lo que no podriamos 
+             saber es el nombre del mismo, ya que los tecnicos son funciones y no podemos saber el nombre de las mismas.
+             Por ejemplo: take 1 (filter (even) [1..])
+                Podriamos considerar con que en este ejemplo [1..] seria la lista infinita de tecnicos y even seria loDejaEnCondiciones
+    
+    Parte 2) 
+         a-  No podriamos tener una lista infinita de autos ya que costosDeLasReparaciones nunca devolveria la lista de autos que necesitan revision
+             porque el filter nunca terminaria de evaluar la lista de autos.
+             Por ejemplo: (sum . filter (even)) [1..]
+                En este ejemplo, sum necesita una lista definida para poder devolver la sumatoria de todos sus elementos, pero la funcion filter no podria
+                darla porque nunca va a terminar de filtrar una lista infinita. 
+         
+         b-  Para este caso, la funcion deberia cambiarse agregando un take delante del filter: 
+                costosDeLasReparaciones listaDeAutos = map costoDeReparacion ((take 3 . filter necesitaRevision) listaDeAutos)
+            
+             Y si aceptaria una lista infinita de autos, ya que seria un caso similar al punto 1
+-}
