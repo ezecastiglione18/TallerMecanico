@@ -11,6 +11,12 @@ anio (_, _, year) = year
  
 data Auto = Auto {patente :: Patente, desgasteLlantas :: [Desgaste], rpm :: Int, temperaturaAgua :: Int, ultimoArreglo :: Fecha} deriving (Show, Eq)
 
+mapPatente funcion auto = auto {patente = funcion (patente auto)}
+mapDesgaste funcion auto = auto {desgasteLlantas = funcion (desgasteLlantas auto)}
+mapRPM funcion auto = auto {rpm = funcion (rpm auto)}
+mapTemperaturaAgua funcion auto = auto {temperaturaAgua = funcion (temperaturaAgua auto)}
+mapUltimoArreglo funcion auto = auto {ultimoArreglo = funcion (ultimoArreglo auto)}
+
 --EJEMPLOS DE AUTOS
 honda :: Auto
 honda = Auto "AT001LN" [0.5, 0.4,0.2,0] 1500 90 (20,02,2015)
@@ -46,11 +52,11 @@ costoDeReparacion = evaluarPatente.patente
 evaluarPatente :: Patente -> Int
 evaluarPatente unaPatente
     |length unaPatente == 7 = 12500
-    |tieneLasLetras "DJ" "NB" unaPatente = calculoPatental unaPatente
+    |estaDentroDeLasLetras "DJ" "NB" unaPatente = calculoPatental unaPatente
     |otherwise = 15000
 
-tieneLasLetras :: String -> String -> Patente -> Bool
-tieneLasLetras parLetras1 parLetras2 unaPatente = unaPatente >= parLetras1 && unaPatente <= parLetras2
+estaDentroDeLasLetras :: String -> String -> Patente -> Bool
+estaDentroDeLasLetras parLetras1 parLetras2 unaPatente = unaPatente >= parLetras1 && unaPatente <= parLetras2
 
 calculoPatental :: Patente -> Int
 calculoPatental unaPatente
@@ -60,14 +66,14 @@ calculoPatental unaPatente
 --------------------------------------------------------------------------------
 --Ejercicio 2
 autoPeligroso :: Auto -> Bool
-autoPeligroso = chequeoPrimeraLlanta.desgasteLlantas
+autoPeligroso = estaDesgastada.desgasteLlantas
 --SON TRUE: ford y chevrolet
 
-chequeoPrimeraLlanta :: [Desgaste] -> Bool
-chequeoPrimeraLlanta desgastesDeLaLlanta = (head desgastesDeLaLlanta) > 0.5
+estaDesgastada :: [Desgaste] -> Bool
+estaDesgastada listaDesgastes = (> 0.5).head $ listaDesgastes
 
 necesitaRevision :: Auto -> Bool
-necesitaRevision unAuto = anio (ultimoArreglo unAuto) <= 2015
+necesitaRevision = (<= 2015).anio.ultimoArreglo
 --SON TRUE: mercedes, fiat, honda
 
 --------------------------------------------------------------------------------
@@ -76,22 +82,22 @@ necesitaRevision unAuto = anio (ultimoArreglo unAuto) <= 2015
 alfa :: Mecanico
 alfa unAuto
   | rpm unAuto <= 2000 = unAuto
-  | otherwise = unAuto {rpm = 2000}
+  | otherwise = mapRPM (const 2000) unAuto
 
 bravo :: Mecanico
-bravo unAuto = unAuto {desgasteLlantas = [0,0,0,0]} 
+bravo unAuto = mapDesgaste (const [0,0,0,0]) unAuto 
 
 charly :: Mecanico
-charly = (bravo . alfa)
+charly = bravo . alfa
 
 tango :: Mecanico
 tango unAuto = unAuto
 
 zulu :: Mecanico
-zulu unAuto = lima (unAuto {temperaturaAgua = 90})
+zulu unAuto = lima.mapTemperaturaAgua (const 90) $ unAuto
 
 lima :: Mecanico
-lima unAuto = unAuto {desgasteLlantas = [0,0] ++ drop 2 (desgasteLlantas unAuto)}
+lima unAuto = mapDesgaste (const ([0,0] ++ drop 2 (desgasteLlantas unAuto))) unAuto
 
 --------------------------------------------------------------------------------
 --Ejercicio 4
@@ -122,7 +128,7 @@ elementosPares _ = []
 
 --Recibe un auto y devuelve la cantidad de desgaste del mismo.
 cantidadDeDesgaste :: Auto -> Int
-cantidadDeDesgaste auto = (round.((*10).sum)) (desgasteLlantas auto)
+cantidadDeDesgaste = round.(*10).sum.desgasteLlantas
 
 --Recibe una lista de autos y devuelve una lista con la cantidad de desgaste de cada uno de ellos.
 listaDeDesgastes :: [Auto] -> [Int]
@@ -132,13 +138,13 @@ listaDeDesgastes autos = map cantidadDeDesgaste autos
 --Ejercicio 5
 
 aplicarOrdenDeReparacion :: Fecha -> [Mecanico] -> Mecanico
-aplicarOrdenDeReparacion fecha listaDeTecnicos unAuto= (renovarFechaDeReparacion fecha . aplicarTecnicos listaDeTecnicos) unAuto
+aplicarOrdenDeReparacion fecha listaDeTecnicos unAuto = renovarFechaDeReparacion fecha . aplicarTecnicos listaDeTecnicos $ unAuto
 
 aplicarTecnicos :: [Mecanico] -> Mecanico
 aplicarTecnicos listaDeTecnicos unAuto = foldr ($) unAuto listaDeTecnicos
 
 renovarFechaDeReparacion:: Fecha -> Mecanico
-renovarFechaDeReparacion fecha unAuto = unAuto {ultimoArreglo = fecha}
+renovarFechaDeReparacion fecha unAuto = mapUltimoArreglo (const fecha) unAuto
 
 --------------------------------------------------------------------------------
 --Ejercicio 6
@@ -149,14 +155,17 @@ tecnicosEnCondiciones listaDeTecnicos unAuto = filter (loDejaEnCondiciones unAut
 --honda [alfa, bravo, charly, tango, zulu, lima] => [alfa, bravo, charly, tango, zulu, lima]
 
 loDejaEnCondiciones :: Auto -> Mecanico -> Bool
-loDejaEnCondiciones unAuto unMecanico = not (autoPeligroso (unMecanico unAuto))
+loDejaEnCondiciones unAuto unMecanico = not . autoPeligroso . unMecanico $ unAuto --not (autoPeligroso (unMecanico unAuto))
 
 costoTotal :: [Auto] -> Int
-costoTotal listaAutos = sum (costosDeLasReparaciones listaAutos)
+costoTotal = sum.costosDeLasReparaciones.cualesNecesitanRevision
 --[honda, ford, audi, mercedes] => 27500
 
+cualesNecesitanRevision :: [Auto] -> [Auto]
+cualesNecesitanRevision = filter necesitaRevision
+
 costosDeLasReparaciones :: [Auto] -> [Int]
-costosDeLasReparaciones listaDeAutos = map costoDeReparacion (filter necesitaRevision listaDeAutos)
+costosDeLasReparaciones = map costoDeReparacion
 
 --------------------------------------------------------------------------------
 --Ejercicio 7
